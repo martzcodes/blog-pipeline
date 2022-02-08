@@ -1,13 +1,13 @@
 import * as cdk from 'aws-cdk-lib';
 import { Template } from 'aws-cdk-lib/assertions';
-import * as BlogPipeline from '../lib/blog-pipeline-stack';
+import * as BlogPipeline from '../lib/queue-stack';
 
 // example test. To run these tests, uncomment this file along with the
 // example resource in lib/blog-pipeline-stack.ts
 test('SQS Queue Created', () => {
   const app = new cdk.App();
     // WHEN
-  const stack = new BlogPipeline.BlogPipelineStack(app, 'MyTestStack');
+  const stack = new BlogPipeline.QueueStack(app, 'MyTestStack');
     // THEN
   const template = Template.fromStack(stack);
 

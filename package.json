@@ -8,7 +8,9 @@
     "build": "tsc",
     "watch": "tsc -w",
     "test": "jest",
-    "cdk": "cdk"
+    "cdk": "cdk",
+    "deploy": "cdk deploy '*'",
+    "deploy:pipeline": "USE_PIPELINE=1 cdk deploy '*'"
   },
   "devDependencies": {
     "@types/jest": "^26.0.10",
