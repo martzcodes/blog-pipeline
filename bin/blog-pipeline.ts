@@ -30,7 +30,7 @@ class BlogPipeline extends Stack {
           commands: ['n latest', 'node -v', 'npm ci'],
         },
         build: {
-          commands: ['npm run synth']
+          commands: ['npx cdk synth']
         }
       }
     });
