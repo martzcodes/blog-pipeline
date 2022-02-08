@@ -2,20 +2,56 @@
 import 'source-map-support/register';
 import * as cdk from 'aws-cdk-lib';
 import { BlogPipelineStack } from '../lib/blog-pipeline-stack';
+import { SecretValue, Stack, StackProps, Stage, StageProps } from 'aws-cdk-lib';
+import { Construct } from 'constructs';
+import { BuildSpec } from 'aws-cdk-lib/aws-codebuild';
+import { CodeBuildStep, CodePipeline, CodePipelineSource } from 'aws-cdk-lib/pipelines';
 
 const app = new cdk.App();
-new BlogPipelineStack(app, 'BlogPipelineStack', {
-  /* If you don't specify 'env', this stack will be environment-agnostic.
-   * Account/Region-dependent features and context lookups will not work,
-   * but a single synthesized template can be deployed anywhere. */
 
-  /* Uncomment the next line to specialize this stack for the AWS Account
-   * and Region that are implied by the current CLI configuration. */
-  // env: { account: process.env.CDK_DEFAULT_ACCOUNT, region: process.env.CDK_DEFAULT_REGION },
+class BlogPipelineStage extends Stage {
+  constructor(scope: Construct, id: string, props: StageProps) {
+    super(scope, id, props);
+    new BlogPipelineStack(this, 'BlogPipelineStack', {});
+  }
+}
 
-  /* Uncomment the next line if you know exactly what Account and Region you
-   * want to deploy the stack to. */
-  // env: { account: '123456789012', region: 'us-east-1' },
+class BlogPipeline extends Stack {
+  constructor(scope: Construct, id: string, props: StackProps) {
+    super(scope, id, props);
+    const owner = 'martzcodes';
+    const repo = 'blog-pipeline';
+    const branch = 'main';
+    const secretArn = 'arn:aws:secretsmanager:us-east-1:359317520455:secret:BlogPipelineGitHubToken-gwKanq';
+    const pipelineSpec = BuildSpec.fromObject({
+      version: '0.2',
+      phases: {
+        install: {
+          commands: ['n latest', 'node -v', 'npm ci'],
+        },
+        build: {
+          commands: ['npm run synth']
+        }
+      }
+    });
+    const synthAction = new CodeBuildStep(`Synth`, {
+      input: CodePipelineSource.gitHub(`${owner}/${repo}`, branch, {
+        authentication: SecretValue.secretsManager(secretArn, {
+        jsonField: 'access-token',
+      }),
+      }),
+      partialBuildSpec: pipelineSpec,
+      commands: [],
+    });
+    const pipeline = new CodePipeline(this, `Pipeline`, {
+      synth: synthAction,
+      dockerEnabledForSynth: true,
+      // crossAccountKeys: true, // need this if you're actually deploying to multiple accounts
+    });
 
-  /* For more information, see https://docs.aws.amazon.com/cdk/latest/guide/environments.html */
-});
+    const stage = new BlogPipelineStage(app, 'BlogPipelineStage', {});
+    pipeline.addStage(stage);
+  }
+}
+
+new BlogPipeline(app, `BlogPipeline`, {});
