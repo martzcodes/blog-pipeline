@@ -1,4 +1,4 @@
-import { SecretValue, Stack, StackProps } from "aws-cdk-lib";
+import { Environment, SecretValue, Stack, StackProps } from "aws-cdk-lib";
 import { BuildSpec, GitHubSourceCredentials } from "aws-cdk-lib/aws-codebuild";
 import {
   CodeBuildStep,
@@ -16,8 +16,11 @@ export interface CentralPipelineProps extends StackProps {
   branch: string;
   secretArn: string;
   pullRequestProjects: string[][];
-  stages: string[];
-  stageGenerator: (scope: Construct, id: string) => void;
+  stages: {
+    name: string;
+    env: Environment;
+  }[];
+  stageGenerator: (scope: Construct, id: string, props: StackProps) => void;
 }
 
 export class CentralPipeline extends Stack {
@@ -27,7 +30,7 @@ export class CentralPipeline extends Stack {
 
     if (!usePipeline) {
       // we use scope here to put the stage contents on the top level
-      props.stageGenerator(scope, 'QueueStack');
+      props.stageGenerator(scope, "QueueStack", {});
 
       return;
     }
@@ -56,13 +59,14 @@ export class CentralPipeline extends Stack {
       synth: synthAction,
       dockerEnabledForSynth: true,
       // need this if you're actually deploying to multiple accounts
-      // crossAccountKeys: true,
+      crossAccountKeys: !!props.stages.length,
     });
 
-    props.stages.forEach((stageName) => {
-      const stage = new CentralStage(this, stageName, {
+    props.stages.forEach((deploymentStage) => {
+      const stage = new CentralStage(this, deploymentStage.name, {
         stackId: "QueueStack",
         stageGenerator: props.stageGenerator,
+        env: deploymentStage.env,
       });
       pipeline.addStage(stage);
     });
@@ -75,11 +79,11 @@ export class CentralPipeline extends Stack {
 
     props.pullRequestProjects.forEach((projectCommands) => {
       new CentralPullRequestBuild(this, "UnitTests", {
-      owner,
-      repo,
-      branch,
-      buildCommands: projectCommands,
-    });
+        owner,
+        repo,
+        branch,
+        buildCommands: projectCommands,
+      });
     });
   }
 }

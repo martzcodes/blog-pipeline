@@ -7,6 +7,11 @@ import { Construct } from 'constructs';
 import { BuildSpec, EventAction, FilterGroup, GitHubSourceCredentials, Project, Source } from 'aws-cdk-lib/aws-codebuild';
 import { CodeBuildStep, CodePipeline, CodePipelineSource } from 'aws-cdk-lib/pipelines';
 
+const env = {
+  account: process.env.CDK_DEFAULT_ACCOUNT,
+  region: process.env.CDK_DEFAULT_REGION,
+};
+
 const app = new cdk.App();
 
 class BlogPipelineStage extends Stage {
@@ -22,7 +27,7 @@ class BlogPipeline extends Stack {
     const owner = 'martzcodes';
     const repo = 'blog-pipeline';
     const branch = 'main';
-    const secretArn = 'arn:aws:secretsmanager:us-east-1:359317520455:secret:BlogPipelineGitHubToken-gwKanq';
+    const secretArn = `arn:aws:secretsmanager:${env.region}:${env.account}:secret:BlogPipelineGitHubToken-gwKanq`;
     const pipelineSpec = BuildSpec.fromObject({
       version: 0.2,
       phases: {

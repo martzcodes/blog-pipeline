@@ -4,11 +4,15 @@ import * as cdk from "aws-cdk-lib";
 import { CentralPipeline } from "../lib/central-pipeline";
 import { stageGenerator } from "../lib/stage-generator";
 
+const env = {
+  account: process.env.CDK_DEFAULT_ACCOUNT,
+  region: process.env.CDK_DEFAULT_REGION,
+};
+
 const owner = "martzcodes";
 const repo = "blog-pipeline";
 const branch = "main";
-const secretArn =
-  "arn:aws:secretsmanager:us-east-1:359317520455:secret:BlogPipelineGitHubToken-gwKanq";
+const secretArn = `arn:aws:secretsmanager:${env.region}:${env.account}:secret:BlogPipelineGitHubToken-gwKanq`;
 
 const app = new cdk.App();
 
@@ -20,7 +24,19 @@ new CentralPipeline(app, `My${usePipeline ? "Pipeline" : "Stack"}`, {
   repo,
   branch,
   secretArn,
-  stages: ["QueueStage"],
-  pullRequestProjects: [["npm run test"],],
+  stages: [
+    {
+      name: "Main",
+      env,
+    },
+    // {
+    //   name: "FakeProd",
+    //   env: {
+    //     account: '12345',
+    //     region: 'us-east-1',
+    //   },
+    // },
+  ],
+  pullRequestProjects: [["npm run test"]],
   stageGenerator: stageGenerator,
 });
