@@ -1,14 +1,9 @@
-# Welcome to your CDK TypeScript project!
+# CDK Pipelines Blog Series
 
-This is a blank project for TypeScript development with CDK.
+This repo is for my CDK Pipelines blog series at [https://matt.martz.codes/series/cdk-pipelines](https://matt.martz.codes/series/cdk-pipelines).
 
-The `cdk.json` file tells the CDK Toolkit how to execute your app.
+[Part 1: CDK Pipelines Crash Course](https://matt.martz.codes/cdk-pipelines-crash-course) goes through [bin/simple-pipeline.ts](bin/simple-pipeline.ts) which creates a CDK Pipeline and a CodeBuild project that triggers on GitHub Pull Request updates.
 
-## Useful commands
+Part 2: Creating CDK Pipeline Constructs to Improve Developer Experience goes through how to turn Part 1's code into CDK Constructs that could be published as an npm library. (Post will be published on 2/10/2022).
 
- * `npm run build`   compile typescript to js
- * `npm run watch`   watch for changes and compile
- * `npm run test`    perform the jest unit tests
- * `cdk deploy`      deploy this stack to your default AWS account/region
- * `cdk diff`        compare deployed stack with current state
- * `cdk synth`       emits the synthesized CloudFormation template
+[Follow me on twitter @martzcodes](https://twitter.com/martzcodes)
